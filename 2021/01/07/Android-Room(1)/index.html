@@ -250,7 +250,7 @@ function loadGitalk () {
     var gitalk = new Gitalk({
       clientID: '8e22129f09b82bb27917',
       clientSecret: '48314892f0227bdd327e568a8ef4f377cb4fea7f',
-      repo: 'gitalk',
+      repo: 'blog',
       owner: 'flymysky',
       admin: ['flymysky'],
       id: '79874715029fd86fbe7534901b553466',
@@ -258,7 +258,7 @@ function loadGitalk () {
       perPage: 10,
       distractionFreeMode: false,
       pagerDirection: 'last',
-      createIssueManually: true,
+      createIssueManually: false,
       updateCountCallback: commentCount
     })
     gitalk.render('gitalk-container')
