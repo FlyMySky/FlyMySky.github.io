@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hilt依赖注入(1) | Vicent</title><meta name="keywords" content="Android,依赖注入,Hilt,Dagger"><meta name="author" content="Vicent"><meta name="copyright" content="Vicent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="Hilt-依赖注入框架​    Hilt 是Google 最新的依赖注入框架，其是基于Dagger研发，但它不同于Dagger。对于Android开发者来说，Hilt可以说专门为Android 打造，提供了一种将Dagger依赖项注入到Android应用程序的标准方法，而且创建了一组标准的组件和作用域，这些组件会自动集成到Android应用程序的各个生命周期中，以简化开发者的上手难度。 注解 @H">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hilt依赖注入(1)">
+<meta property="og:url" content="http://example.com/2021/03/25/Hilt/index.html">
+<meta property="og:site_name" content="Vicent">
+<meta property="og:description" content="Hilt-依赖注入框架​    Hilt 是Google 最新的依赖注入框架，其是基于Dagger研发，但它不同于Dagger。对于Android开发者来说，Hilt可以说专门为Android 打造，提供了一种将Dagger依赖项注入到Android应用程序的标准方法，而且创建了一组标准的组件和作用域，这些组件会自动集成到Android应用程序的各个生命周期中，以简化开发者的上手难度。 注解 @H">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s3.ax1x.com/2021/01/07/se2IM9.png">
+<meta property="article:published_time" content="2021-03-25T06:27:18.000Z">
+<meta property="article:modified_time" content="2021-03-25T07:21:07.144Z">
+<meta property="article:author" content="Vicent">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="依赖注入">
+<meta property="article:tag" content="Hilt">
+<meta property="article:tag" content="Dagger">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s3.ax1x.com/2021/01/07/se2IM9.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/25/Hilt/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><meta name="yandex-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#FF7242&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#FF7242&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#FF7242&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-25 15:21:07'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'true'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}const fontSizeVal = saveToLocal.get('global-font-size')
+if (fontSizeVal !== undefined) {
+  document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s3.ax1x.com/2021/01/07/se2IM9.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Vicent</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Hilt依赖注入(1)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-03-25T06:27:18.000Z" title="发表于 2021-03-25 14:27:18">2021-03-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-25T07:21:07.144Z" title="更新于 2021-03-25 15:21:07">2021-03-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/Android/">Android</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Hilt-依赖注入框架"><a href="#Hilt-依赖注入框架" class="headerlink" title="Hilt-依赖注入框架"></a>Hilt-依赖注入框架</h1><p>​    Hilt 是Google 最新的依赖注入框架，其是基于Dagger研发，但它不同于Dagger。对于Android开发者来说，Hilt可以说专门为Android 打造，提供了一种将Dagger依赖项注入到Android应用程序的标准方法，而且创建了一组标准的组件和作用域，这些组件会自动集成到Android应用程序的各个生命周期中，以简化开发者的上手难度。</p>
+<h2 id="注解"><a href="#注解" class="headerlink" title="注解"></a>注解</h2><ul>
+<li><p>@HiltAndroidApp</p>
+<p>触发Hilt的代码生成，包括适用于应用程序的基类，可以使用依赖注入，应用程序容器是应用程序的父容器，这意味着其他容器可以访问其提供的依赖项。</p>
+</li>
+<li><p>@AndroidEntryPoint</p>
+<p>其会创建一个依赖容器，该容器遵循Android类的生命周期</p>
+</li>
+<li><p>@Inject</p>
+<p>用来注入的字段，其类型不能为Private</p>
+<p>如果要告诉 Hilt 如何提供相应类型的实例，需要将 @Inject 添加到要注入的类的构造函数中。</p>
+<p>Hilt有关如何提供不同类型的实例的信息也称为绑定<strong>。</strong></p>
+</li>
+<li><p>@Install(xx)</p>
+<p>Install 用来告诉 Hilt 这个模块会被安装到哪个组件上.</p>
+</li>
+</ul>
+<h2 id="标准组件"><a href="#标准组件" class="headerlink" title="标准组件"></a>标准组件</h2><ol>
+<li><strong><code>ApplicationComponent</code></strong></li>
+<li><strong><code>ActivityRetainedComponent</code></strong></li>
+<li><strong><code>ActivityComponent</code></strong></li>
+<li><strong><code>FragmentComponent</code></strong></li>
+<li><strong><code>ViewComponent</code></strong></li>
+<li><strong><code>ViewWithFragmentComponent</code></strong></li>
+<li><strong><code>ServiceComponent</code></strong></li>
+</ol>
+<h2 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h2><ul>
+<li>它限制了在创建组件和生成组件范围绑定的生命周期</li>
+<li>它指示合适可以使用成员注入的值。(例如：当@Inject 字段不为null时)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><strong>Component</strong></th>
+<th><strong>作用范围</strong></th>
+<th><strong>Created at</strong></th>
+<th><strong>Destroyed at</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>ApplicationComponent</code></strong></td>
+<td>@Singleton</td>
+<td>Application#onCreate()</td>
+<td>Application#onDestroy()</td>
+</tr>
+<tr>
+<td><strong><code>ActivityRetainedComponent</code></strong></td>
+<td>@ActivityRetainedScope</td>
+<td>Activity#onCreate()</td>
+<td>Activity#onDestroy()</td>
+</tr>
+<tr>
+<td><strong><code>ActivityComponent</code></strong></td>
+<td>@ActivityScoped</td>
+<td>Activity#onCreate()</td>
+<td>Activity#onDestroy()</td>
+</tr>
+<tr>
+<td><strong><code>FragmentComponent</code></strong></td>
+<td>@FragmentScoped</td>
+<td>Fragment#onAttach()</td>
+<td>Fragment#onDestroy()</td>
+</tr>
+<tr>
+<td><strong><code>ViewComponent</code></strong></td>
+<td>@ViewScoped</td>
+<td>View#super()</td>
+<td><code>View</code> destroyed</td>
+</tr>
+<tr>
+<td><strong><code>ViewWithFragmentComponent</code></strong></td>
+<td>@ViewScoped</td>
+<td>View#super()</td>
+<td><code>View</code> destroyed</td>
+</tr>
+<tr>
+<td><strong><code>ServiceComponent</code></strong></td>
+<td>@ServiceScoped</td>
+<td>Service#onCreate()</td>
+<td>Service#onDestroy()</td>
+</tr>
+</tbody></table>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">默认情况下，所有的绑定都是无作用域，也就是说，每次绑定时，都会创建一个新的绑定实例；</span><br><span class="line">但是，Dagger 允许绑定作用域到特定组件，如上表所示，在指定组件范围内，实例都只会创建一次，并且对该绑定的所有请求都将共享同一实例。</span><br></pre></td></tr></table></figure>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><ul>
+<li><p>导入依赖</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">api <span class="string">&quot;com.google.dagger:hilt-android:2.28-alpha&quot;</span></span><br><span class="line">annotationProcessor <span class="string">&quot;com.google.dagger:hilt-android-compiler:2.28-alpha&quot;</span></span><br><span class="line">api <span class="string">&#x27;androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02&#x27;</span></span><br><span class="line">annotationProcessor <span class="string">&#x27;androidx.hilt:hilt-compiler:1.0.0-alpha02&#x27;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>导入插件(根目录下build)</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">classpath <span class="string">&#x27;com.google.dagger:hilt-android-gradle-plugin:2.28-alpha&#x27;</span></span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<ul>
+<li><p>Application 处理</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@HiltAndroidApp</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context base)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.attachBaseContext(base);</span><br><span class="line">        MultiDex.install(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Activity处理</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@AndroidEntryPoint</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">BaseActivity</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Fragment处理(依赖的activity也需要添加注解@AndroidEntryPoint)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@AndroidEntryPoint</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HomeFragment</span> <span class="keyword">extends</span> <span class="title">BaseBindFragment</span>&lt;<span class="title">FragmentHomeBinding</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;Kind&gt; mKindList;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HomeViewModel mHomeViewModel;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> VP2FragmentStateAdapter mAdapter;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">getLayoutRes</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> R.layout.fragment_home;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initViews</span><span class="params">(View view)</span> </span>&#123;</span><br><span class="line">        mHomeViewModel = getViewModel(HomeViewModel.class);</span><br><span class="line">        mKindList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//禁用预加载</span></span><br><span class="line">        dataBind.viewPager.setOffscreenPageLimit(ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT);</span><br><span class="line">        mAdapter = <span class="keyword">new</span> VP2FragmentStateAdapter(getChildFragmentManager(), getLifecycle(), mKindList);</span><br><span class="line">        dataBind.viewPager.setAdapter(mAdapter);</span><br><span class="line">        TabLayoutMediator mediator = <span class="keyword">new</span> TabLayoutMediator(dataBind.topTableLayout, dataBind.viewPager, (tab, position) -&gt; &#123;</span><br><span class="line">            <span class="comment">//这里可以自定义TabView</span></span><br><span class="line">            TextView tabView = <span class="keyword">new</span> TextView(getContext());</span><br><span class="line">            <span class="keyword">int</span>[][] states = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>][];</span><br><span class="line">            states[<span class="number">0</span>] = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;android.R.attr.state_selected&#125;;</span><br><span class="line">            states[<span class="number">1</span>] = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;&#125;;</span><br><span class="line">            <span class="keyword">int</span>[] colors = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;R.color.base_color, R.color.black&#125;;</span><br><span class="line">            ColorStateList colorStateList = <span class="keyword">new</span> ColorStateList(states, colors);</span><br><span class="line">            tabView.setText(mKindList.get(position).getName());</span><br><span class="line">            tabView.setTextColor(colorStateList);</span><br><span class="line">            tabView.setGravity(Gravity.CENTER);</span><br><span class="line">            tab.setCustomView(tabView);</span><br><span class="line">        &#125;);</span><br><span class="line">        mediator.attach();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mHomeViewModel.getListKind()</span><br><span class="line">                .observe(<span class="keyword">this</span>, list -&gt; &#123;</span><br><span class="line">                    <span class="keyword">if</span> (list != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        mKindList.clear();</span><br><span class="line">                        mKindList.addAll(list);</span><br><span class="line"><span class="comment">//                        mAdapter.setData(mKindList);</span></span><br><span class="line">                        mAdapter.notifyDataSetChanged();</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        LogUtils.d(<span class="string">&quot;数据为空&quot;</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>ViewModel</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HomeViewModel</span> <span class="keyword">extends</span> <span class="title">ViewModel</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HomeRepository mHomeRepository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    ApiService mApiService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Context mContext;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MediatorLiveData&lt;List&lt;Kind&gt;&gt; mListMediatorLiveData = <span class="keyword">new</span> MediatorLiveData&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ViewModelInject</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HomeViewModel</span><span class="params">(<span class="meta">@ActivityContext</span> Context context, HomeRepository homeRepository,</span></span></span><br><span class="line"><span class="function"><span class="params">                         ApiService apiService, <span class="meta">@Assisted</span> SavedStateHandle savedStateHandle)</span> </span>&#123;</span><br><span class="line">        mContext = context;</span><br><span class="line">        mHomeRepository = homeRepository;</span><br><span class="line">        <span class="keyword">this</span>.mApiService = apiService;</span><br><span class="line">        mListMediatorLiveData.addSource(mHomeRepository.getListKind(), mListMediatorLiveData::postValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> LiveData&lt;List&lt;Kind&gt;&gt; getObserverListKind() &#123;</span><br><span class="line">        <span class="keyword">return</span> mListMediatorLiveData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> LiveData&lt;List&lt;Kind&gt;&gt; getListKind() &#123;</span><br><span class="line">        loadListKind();</span><br><span class="line">        <span class="keyword">return</span> mListMediatorLiveData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadListKind</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mApiService.getListKind()</span><br><span class="line">                .compose(ResponseTransformer.handleResult())</span><br><span class="line">                .compose(ResponseTransformer.applySchedulers())</span><br><span class="line">                .subscribe(<span class="keyword">new</span> ProgressObserver&lt;List&lt;Kind&gt;&gt;(mContext) &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onSuccess</span><span class="params">(List&lt;Kind&gt; kinds)</span> </span>&#123;</span><br><span class="line">                        mHomeRepository.insertListKind(kinds);</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onException</span><span class="params">(ApiException exception)</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">super</span>.onException(exception);</span><br><span class="line">                        mHomeRepository.insertListKind(<span class="keyword">null</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>服务以及数据仓库的注入</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HomeRepository</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    KindDao mKindDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    AppExecutors mAppExecutors;<span class="comment">//线程</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    ApiService mApiService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MediatorLiveData&lt;List&lt;Kind&gt;&gt; mListMediatorLiveData = <span class="keyword">new</span> MediatorLiveData&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HomeRepository</span><span class="params">(ApiService apiService, KindDao kindDao, AppExecutors appExecutors)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.mApiService = apiService;</span><br><span class="line">        <span class="keyword">this</span>.mAppExecutors = appExecutors;</span><br><span class="line">        <span class="keyword">this</span>.mKindDao = kindDao;</span><br><span class="line">        mListMediatorLiveData.addSource(mKindDao.getLiveDataKind(), mListMediatorLiveData::postValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> LiveData&lt;List&lt;Kind&gt;&gt; getListKind() &#123;</span><br><span class="line">        <span class="keyword">return</span> mListMediatorLiveData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insertListKind</span><span class="params">(List&lt;Kind&gt; kinds)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (kinds != <span class="keyword">null</span> &amp;&amp; kinds.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            mAppExecutors.getDiskIO()</span><br><span class="line">                    .execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                            mKindDao.insertKind(kinds);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mListMediatorLiveData.postValue(<span class="keyword">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getTableData</span><span class="params">(<span class="keyword">int</span> kind, ProgressObserver&lt;TableData&gt; observer)</span> </span>&#123;</span><br><span class="line">        mApiService.getTableData(kind)</span><br><span class="line">                .compose(ResponseTransformer.handleResult())</span><br><span class="line">                .compose(ResponseTransformer.applySchedulers())</span><br><span class="line">                .subscribe(observer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>为整个应用提供依赖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Module</span></span><br><span class="line"><span class="meta">@InstallIn(ApplicationComponent.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> OkHttpClient <span class="title">getOkHttpClient</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        OkHttpClient.Builder builder = <span class="keyword">new</span> OkHttpClient.Builder();</span><br><span class="line">        SSLSocketFactory ssl = SslContextFactory.getSSLContext().getSocketFactory();</span><br><span class="line">        builder.sslSocketFactory(ssl, Objects.requireNonNull(SslContextFactory.getX509TrustManager()));</span><br><span class="line">        builder.hostnameVerifier((s, sslSession) -&gt; <span class="keyword">true</span>);</span><br><span class="line">        <span class="keyword">return</span> builder.build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Retrofit.<span class="function">Builder <span class="title">getRetrofitBuilder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Retrofit.Builder builder = <span class="keyword">new</span> Retrofit.Builder();</span><br><span class="line">        <span class="keyword">return</span> builder</span><br><span class="line">                .client(getOkHttpClient())</span><br><span class="line">                .addConverterFactory(GsonConverterFactory.create())</span><br><span class="line">                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())</span><br><span class="line">                .addCallAdapterFactory(<span class="keyword">new</span> LiveDataCallAdapterFactory());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Retrofit <span class="title">getRetrofit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Retrofit.Builder builder = <span class="keyword">new</span> Retrofit.Builder();</span><br><span class="line">        <span class="keyword">return</span> builder</span><br><span class="line">                .baseUrl(HttpConst.BASE_URL)</span><br><span class="line">                .client(getOkHttpClient())</span><br><span class="line">                .addConverterFactory(GsonConverterFactory.create())</span><br><span class="line">                .addCallAdapterFactory(<span class="keyword">new</span> LiveDataCallAdapterFactory())</span><br><span class="line">                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ApiService <span class="title">getApiService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getRetrofit().create(ApiService.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends HttpService&gt; <span class="function">T <span class="title">getApiService</span><span class="params">(Class&lt;T&gt; tClass)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getRetrofitBuilder().build().create(tClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends HttpService&gt; <span class="function">T <span class="title">getApiService</span><span class="params">(String url, Class&lt;T&gt; tClass)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getRetrofitBuilder().baseUrl(url).build().create(tClass);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> AppExecutors <span class="title">getAppExecutors</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> AppExecutors.getInstance();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> UserRepository <span class="title">getUserRepository</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> UserRepository(getApiService(), LocalDatabase.getInstance().userDao(), getAppExecutors());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> HomeRepository <span class="title">getHomeRepository</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HomeRepository(getApiService(), LocalDatabase.getInstance().kindDao(), getAppExecutors());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> UserDao <span class="title">getUserDao</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> LocalDatabase.getInstance().userDao();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Singleton</span></span><br><span class="line">    <span class="meta">@Provides</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> KindDao <span class="title">getKindDao</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> LocalDatabase.getInstance().kindDao();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2></li>
+</ul>
+<p>​    以上就是Hilt简单使用方式。</p>
+<h2 id="Hilt-和-Dagger"><a href="#Hilt-和-Dagger" class="headerlink" title="Hilt 和 Dagger"></a>Hilt 和 Dagger</h2><p>Hilt 在依赖项注入库 Dagger 的基础上构建而成，提供了一种将 Dagger 纳入 Android 应用的标准方法。</p>
+<p>关于 Dagger，Hilt 的目标如下：</p>
+<ul>
+<li>简化 Android 应用的 Dagger 相关基础架构。</li>
+<li>创建一组标准的组件和作用域，以简化设置、提高可读性以及在应用之间共享代码。</li>
+<li>提供一种简单的方法来为各种构建类型（如测试、调试或发布）配置不同的绑定。</li>
+</ul>
+<p>由于 Android 操作系统会实例化它自己的许多框架类，因此在 Android 应用中使用 Dagger 要求您编写大量的样板。Hilt 可减少在 Android 应用中使用 Dagger 所涉及的样板代码。Hilt 会自动生成并提供以下各项：</p>
+<ul>
+<li><strong>用于将 Android 框架类与 Dagger 集成的组件</strong> - 您不必手动创建。</li>
+<li><strong>作用域注释</strong> - 与 Hilt 自动生成的组件一起使用。</li>
+<li><strong>预定义的绑定</strong> - 表示 Android 类，如 <code>Application</code> 或 <code>Activity</code>。</li>
+<li><strong>预定义的限定符</strong> - 表示 <code>@ApplicationContext</code> 和 <code>@ActivityContext</code>。</li>
+</ul>
+<p>Dagger 和 Hilt 代码可以共存于同一代码库中。不过，在大多数情况下，最好使用 Hilt 管理您在 Android 上对 Dagger 的所有使用。如需将使用 Dagger 的项目迁移到 Hilt，请参阅迁移指南和“将 Dagger 应用迁移到 Hilt”。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Vicent</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/25/Hilt/">http://example.com/2021/03/25/Hilt/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Vicent</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/">依赖注入</a><a class="post-meta__tags" href="/tags/Hilt/">Hilt</a><a class="post-meta__tags" href="/tags/Dagger/">Dagger</a></div><div class="post_share"><div class="social-share" data-image="https://s3.ax1x.com/2021/01/07/se2IM9.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/03/24/Android-Navigation/"><img class="next-cover" src="https://s3.ax1x.com/2021/01/07/se2IM9.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Android-Navigation</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/01/07/Android-Room(1)/" title="Android-Room（1）"><img class="cover" src="https://s3.ax1x.com/2021/01/07/se2IM9.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-01-07</div><div class="title">Android-Room（1）</div></div></a></div><div><a href="/2021/03/24/Android-Navigation/" title="Android-Navigation"><img class="cover" src="https://s3.ax1x.com/2021/01/07/se2IM9.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-24</div><div class="title">Android-Navigation</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Vicent</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/skwen"><i class="fab git-square"></i><span>关注我</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/FlyMySky" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://gitee.com/skwen" target="_blank" title="Gitee"><i class="fab fa-gitee"></i></a><a class="social-icon" href="mailto:skwen89@163.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">Best wishes</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Hilt-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E6%A1%86%E6%9E%B6"><span class="toc-number">1.</span> <span class="toc-text">Hilt-依赖注入框架</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.1.</span> <span class="toc-text">注解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E7%BB%84%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">标准组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">1.3.</span> <span class="toc-text">生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">1.5.</span> <span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hilt-%E5%92%8C-Dagger"><span class="toc-number">1.6.</span> <span class="toc-text">Hilt 和 Dagger</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/03/25/Hilt/" title="Hilt依赖注入(1)"><img src="https://s3.ax1x.com/2021/01/07/se2IM9.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hilt依赖注入(1)"/></a><div class="content"><a class="title" href="/2021/03/25/Hilt/" title="Hilt依赖注入(1)">Hilt依赖注入(1)</a><time datetime="2021-03-25T06:27:18.000Z" title="发表于 2021-03-25 14:27:18">2021-03-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/24/Android-Navigation/" title="Android-Navigation"><img src="https://s3.ax1x.com/2021/01/07/se2IM9.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Android-Navigation"/></a><div class="content"><a class="title" href="/2021/03/24/Android-Navigation/" title="Android-Navigation">Android-Navigation</a><time datetime="2021-03-24T08:54:11.000Z" title="发表于 2021-03-24 16:54:11">2021-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/07/Android-Room(1)/" title="Android-Room（1）"><img src="https://s3.ax1x.com/2021/01/07/se2IM9.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Android-Room（1）"/></a><div class="content"><a class="title" href="/2021/01/07/Android-Room(1)/" title="Android-Room（1）">Android-Room（1）</a><time datetime="2021-01-07T02:21:12.000Z" title="发表于 2021-01-07 10:21:12">2021-01-07</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(https://s3.ax1x.com/2021/01/07/se2IM9.png)"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Vicent</div><div class="footer_custom_text">Best wishes</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    let initData = {
+      el: '#vcomment',
+      appId: 'p96wfGRzzYFnngjdR2RaPoi0-gzGzoHsz',
+      appKey: '6JDI88xR4iabLFtCRPrGzzaA',
+      placeholder: '请留下你的邮箱---方便回复',
+      avatar: 'monsterid',
+      meta: 'nick,mail'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+    }
+
+    if (true) { 
+      initData.requiredFields= ('nick'.split(','))
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign(initData, otherData)
+    }
+    
+    const valine = new Valine(initData)
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>
