@@ -4,6 +4,39 @@
   
     
     <entry>
+      <title>EditText使用bug</title>
+      <link href="2021/04/30/EditText%E4%BD%BF%E7%94%A8bug/"/>
+      <url>2021/04/30/EditText%E4%BD%BF%E7%94%A8bug/</url>
+      
+        <content type="html"><![CDATA[<h1 id="EditText使用bug"><a href="#EditText使用bug" class="headerlink" title="EditText使用bug"></a>EditText使用bug</h1><h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>今天开发完业务流程测试的时候，发现了无语的问题。正常跳转页面出现了如下异常信息。</p><p>异常信息如下：</p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">com.android.internal.util.SyncResultReceiver$TimeoutException: Not called in 5000ms</span><br><span class="line">        at com.android.internal.util.SyncResultReceiver.waitResult(SyncResultReceiver.java:<span class="number">56</span>)</span><br><span class="line">        at com.android.internal.util.SyncResultReceiver.getIntResult(SyncResultReceiver.java:<span class="number">68</span>)</span><br><span class="line">        at android.view.autofill.AutofillManager.ensureServiceClientAddedIfNeededLocked(AutofillManager.java:<span class="number">1841</span>)</span><br><span class="line">        at android.view.autofill.AutofillManager.notifyViewEnteredLocked(AutofillManager.java:<span class="number">958</span>)</span><br><span class="line">        at android.view.autofill.AutofillManager.notifyViewEntered(AutofillManager.java:<span class="number">942</span>)</span><br><span class="line">        at android.view.autofill.AutofillManager.notifyViewEntered(AutofillManager.java:<span class="number">899</span>)</span><br><span class="line">        at android.view.View.notifyEnterOrExitForAutoFillIfNeeded(View.java:<span class="number">7974</span>)</span><br><span class="line">        at android.view.View.onFocusChanged(View.java:<span class="number">7936</span>)</span><br><span class="line">        at android.widget.TextView.onFocusChanged(TextView.java:<span class="number">10875</span>)</span><br><span class="line">        at android.view.View.handleFocusGainInternal(View.java:<span class="number">7599</span>)</span><br><span class="line">        at android.view.View.requestFocusNoSearch(View.java:<span class="number">12597</span>)</span><br><span class="line">        at android.view.View.requestFocus(View.java:<span class="number">12571</span>)</span><br><span class="line">        at android.view.ViewGroup.onRequestFocusInDescendants(ViewGroup.java:<span class="number">3332</span>)</span><br><span class="line">        at android.view.ViewGroup.requestFocus(ViewGroup.java:<span class="number">3281</span>)</span><br><span class="line">        at android.view.ViewGroup.onRequestFocusInDescendants(ViewGroup.java:<span class="number">3332</span>)</span><br><span class="line">        at android.view.ViewGroup.requestFocus(ViewGroup.java:<span class="number">3281</span>)</span><br><span class="line">        at android.view.ViewGroup.onRequestFocusInDescendants(ViewGroup.java:<span class="number">3332</span>)</span><br><span class="line">        at android.view.ViewGroup.requestFocus(ViewGroup.java:<span class="number">3281</span>)</span><br><span class="line">        at android.view.ViewGroup.onRequestFocusInDescendants(ViewGroup.java:<span class="number">3332</span>)</span><br><span class="line">        at android.view.ViewGroup.requestFocus(ViewGroup.java:<span class="number">3286</span>)</span><br><span class="line">        at android.view.View.requestFocus(View.java:<span class="number">12538</span>)</span><br><span class="line">        at android.view.View.restoreDefaultFocus(View.java:<span class="number">12517</span>)</span><br><span class="line">        at android.view.ViewGroup.restoreDefaultFocus(ViewGroup.java:<span class="number">3348</span>)</span><br><span class="line">        at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:<span class="number">2988</span>)</span><br><span class="line">        at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:<span class="number">2005</span>)</span><br><span class="line">        at android.view.ViewRootImpl$TraversalRunnable.run(ViewRootImpl.java:<span class="number">8202</span>)</span><br><span class="line">        at android.view.Choreographer$CallbackRecord.run(Choreographer.java:<span class="number">1094</span>)</span><br><span class="line">        at android.view.Choreographer.doCallbacks(Choreographer.java:<span class="number">917</span>)</span><br><span class="line">        at android.view.Choreographer.doFrame(Choreographer.java:<span class="number">844</span>)</span><br><span class="line">        at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:<span class="number">1079</span>)</span><br><span class="line">        at android.os.Handler.handleCallback(Handler.java:<span class="number">883</span>)</span><br><span class="line">        at android.os.Handler.dispatchMessage(Handler.java:<span class="number">100</span>)</span><br><span class="line">        at android.os.Looper.loop(Looper.java:<span class="number">238</span>)</span><br><span class="line">        at android.app.ActivityThread.main(ActivityThread.java:<span class="number">7798</span>)</span><br><span class="line">        at java.lang.reflect.Method.invoke(Native Method)</span><br><span class="line">        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:<span class="number">492</span>)</span><br><span class="line">        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:<span class="number">995</span>)</span><br></pre></td></tr></table></figure><p>此问题出现的莫名其妙，要知道，早上测试还是正常的。吃个饭回来居然直接奔溃了，不能忍啊。</p><p>打眼一看，5秒超时，难道是ANR？</p><p>好吧，分析完代码发现，根本不是。</p><p>接着异常信息向下看，AutofillManager ！！！，自动填充引起的？</p><p>查看了跳转页面，很简单一个获取验证码页面，额。就一个EditText，难道是EditText自动填充导致的？查看源码发现，在Android10上，Edittext默认开启自动填充功能。好吧，果然是这个，解决它。</p><h3 id="解决方式比较简单"><a href="#解决方式比较简单" class="headerlink" title="解决方式比较简单"></a>解决方式比较简单</h3><ol><li><p>积累BaseActivity - onCreate方法直接添加一下代码即可。基本针对全局，方便快捷。别忘记判断版本Android O以上</p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">getWindow().getDecorView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);</span><br></pre></td></tr></table></figure></li><li><p>也可以直接xml属性 importantForAutofill 设为 no</p></li></ol><p>注：</p><p>此问题只有部分机型出现，本人出现在oppo上。经测试华为，小米上也会偶现。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+          <category> Android </category>
+          
+          <category> Bugs </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Android </tag>
+            
+            <tag> bug </tag>
+            
+            <tag> widgets </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Hilt依赖注入(1)</title>
       <link href="2021/03/25/Hilt/"/>
       <url>2021/03/25/Hilt/</url>
